@@ -2,7 +2,7 @@
 # Penn-Fudan Dataset contains 170 images with 345 instances of pedestrians
 # This code below has strong dependece on this tutorial (https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html)
 
-# inst seg 같은 경우에는 클래스 중복이 되지 않을 것임. 따라서 같은 클래스의 위치를 찾고 
+# inst seg 같은 경우에는 클래스 중복이 되지 않을 것임. 따라서 같은 클래스의 위치를 찾고 거기서 max값이랑 min 값 찾으면 됨.
 
 from torch.utils.data import Dataset
 import os, glob
@@ -34,7 +34,39 @@ class PennFudanDataset(Dataset):
                 - keypoints (FloatTensor[N, K, 3]): Optional. For each one of the N objects, it contains the K keypoints in [x, y, visibility] format, defining the object. visibility=0 means that the keypoint is not visible. Note that for data augmentation, the notion of flipping a keypoint is dependent on the data representation, and you should probably adapt references/detection/transforms.py for your new keypoint representation
         """
         img = Image.open(self.imgs[idx]).convert("RGB")
-        mask = np.array(Image.open(self.masks[idx]))
+        mask = np.array(Image.open(self.masks[idx])) # As opening the image with opencv, ensure that a image shape shoud be in an order of (c,h,w), not (h,w,c).
+        
+        # mask에서 instance를 구분하는 형식은 아니고, box를 따로 만들어서 거기서 instance 구분하는 방식임.
+        obj_ids = np.unique(mask) # Get the object ids (each ids are unique.)
+        obj_ids = obj_ids[1:] # array with N elements
+
+        # split the color-encoded mask into a set of binary masks
+        masks = mask = obj_ids[:, None, None] # By this, add new axis at an axis position 2, 3 (masks: [N,H,W])
+
+        num_objs = len(obj_ids)
+        boxes = []
+        
+        # Get the coords of bounding boxes for each instances.
+        for i in range(num_objs):
+            inst_pts = np.where(masks[i])
+            xmin = np.min(inst_pts[1])
+            xmax = np.max(inst_pts[1])
+            ymin = np.min(inst_pts[0])
+            ymax = np.max(inst_pts[0])
+            boxes.append([xmin,xmax,ymin,ymax])
+
+        boxes = torch.as_tensor(boxes, dtype=torch.float32)
+        labels = torch.ones((num_objs, ), dtype=torch.int64)
+        masks = torch.as_tensor(masks, dtype=torch.uint8)
+
+        image_id = torch.tensor([idx])
+        area = (boxes[:, 3] - boxes[:, 1] * boxes[:, 2] - boxes[:, 0])
+        iscrowd = torch.zeros((num_objs, ), dtype=torch.int64) # suppose all instances are not crowd
+
+        
+
+
+
         
 
         
