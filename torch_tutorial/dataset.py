@@ -89,3 +89,13 @@ def get_transform(train):
     if train:
         transforms.append(T.RandomHorizontalFlip(.5))
     return T.Compose(transforms)
+
+
+if __name__ == "__main__":
+    from torch.utils.data import DataLoader
+
+    dataset = PennFudanDataset()
+    print(f"The dataset contains {len(dataset)} elements.")
+
+    dataloader = DataLoader(dataset, batch_size=1)
+    print(next(iter(dataloader)))
