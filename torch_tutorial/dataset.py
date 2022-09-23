@@ -4,21 +4,25 @@
 
 # inst seg 같은 경우에는 클래스 중복이 되지 않을 것임. 따라서 같은 클래스의 위치를 찾고 거기서 max값이랑 min 값 찾으면 됨.
 
+import torch
 from torch.utils.data import Dataset
 import os, glob
 from PIL import Image
 import numpy as np
+import torchvision.transforms as T
 
 
 class PennFudanDataset(Dataset):
-    def __init__(self, root="data/PennFudanPed/"):
+    def __init__(self, root="data/PennFudanPed/", transforms=None):
         super().__init__()
         self.root = root
         self.imgs = sorted(glob.glob(root+"/PNGImages/*.png"))
         self.masks = sorted(glob.glob(root+"/PedMasks/*.png")) # mask만 주어져있으면 instance segmentation은 따로 label을 읽을 필요가 없을 것 같은데?
+        
+        self.transforms = transforms
 
     def __len__(self):
-        return
+        return len(self.imgs)
 
     def __getitem__(self, idx):
         """
@@ -63,12 +67,25 @@ class PennFudanDataset(Dataset):
         area = (boxes[:, 3] - boxes[:, 1] * boxes[:, 2] - boxes[:, 0])
         iscrowd = torch.zeros((num_objs, ), dtype=torch.int64) # suppose all instances are not crowd
 
+        target = {
+            "boxes": boxes,
+            "labels": labels,
+            "masks": masks,
+            "image_id": image_id,
+            "area": area,
+            "iscrowd": iscrowd
+            }
+
+        if self.transforms is not None:
+            img, target = self.transfroms(img, target)
         
+        return img, target
 
 
-
-        
-
-        
-        return
-
+def get_transform(train):
+    transforms = []
+    transforms.append(T.PILToTensor())
+    transforms.append(T.ConvertImageDtype(torch.float))
+    if train:
+        transforms.append(T.RandomHorizontalFlip(.5))
+    return T.Compose(transforms)
