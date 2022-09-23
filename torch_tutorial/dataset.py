@@ -97,5 +97,8 @@ if __name__ == "__main__":
     dataset = PennFudanDataset()
     print(f"The dataset contains {len(dataset)} elements.")
 
-    dataloader = DataLoader(dataset, batch_size=1)
+    def collate_fn(batch):
+        return tuple(zip(*batch))
+
+    dataloader = DataLoader(dataset, batch_size=1, collate_fn=collate_fn)
     print(next(iter(dataloader)))
