@@ -1,6 +1,5 @@
+# This code below has strong dependece on this tutorial (https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html)
 import torchvision
-from torchvision.models.detection import FasterRCNN
-from torchvision.models.detection.rpn import AnchorGenerator
 
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor

@@ -1,3 +1,4 @@
+# This code below has strong dependece on this tutorial (https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html)
 from detection.engine import train_one_epoch, evaluate
 from detection import utils
 

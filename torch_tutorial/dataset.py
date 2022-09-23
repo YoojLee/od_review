@@ -2,7 +2,7 @@
 # Penn-Fudan Dataset contains 170 images with 345 instances of pedestrians
 # This code below has strong dependece on this tutorial (https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html)
 
-# inst seg 같은 경우에는 클래스 중복이 되지 않을 것임. 따라서 같은 클래스의 위치를 찾고 거기서 max값이랑 min 값 찾으면 됨.
+# For instance segmentation, there are no duplicates in classes. Therefore, for bounding boxes, if we find max and min values of a certain class, that would be the coords of bounding boxes.
 
 import torch
 from torch.utils.data import Dataset
